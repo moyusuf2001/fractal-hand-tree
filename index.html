@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hand Tree — Fractal + Two-Hand Themes</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+  <!-- ml5.js v1 includes HandPose (MediaPipe Hands via TensorFlow.js) -->
+  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0c1014;
+      overflow: hidden;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    canvas { display: block; }
+
+    #ui {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 12px;
+      line-height: 1.55;
+      max-width: 280px;
+      padding: 14px 16px;
+      background: rgba(12, 16, 20, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    #ui h1 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      opacity: 0.95;
+    }
+
+    #ui p { opacity: 0.55; margin-bottom: 10px; }
+
+    #ui label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      cursor: pointer;
+      opacity: 0.9;
+    }
+
+    #ui input[type="radio"] { accent-color: #7dd3c0; }
+
+    #manual-wrap {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: none;
+    }
+
+    #manual-wrap.visible { display: block; }
+
+    #manual-wrap select {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 13px;
+    }
+
+    #status {
+      margin-top: 10px;
+      font-size: 11px;
+      opacity: 0.45;
+      font-family: ui-monospace, monospace;
+    }
+
+    #fallback-link {
+      margin-top: 12px;
+      font-size: 11px;
+      opacity: 0.5;
+    }
+
+    #fallback-link a {
+      color: #9dd4c8;
+      text-decoration: none;
+    }
+
+    #fallback-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div id="ui">
+    <h1>Hand Tree</h1>
+    <p><strong>Right hand</strong> = tree complexity (1–5 fingers).<br>
+       <strong>Left hand</strong> = color theme (1–5 fingers).</p>
+    <p style="margin-top:4px;opacity:0.4;font-size:11px;">
+      1 = Spring &nbsp;·&nbsp; 2 = Autumn &nbsp;·&nbsp; 3 = Night<br>
+      4 = Sakura &nbsp;·&nbsp; 5 = Rainbow
+    </p>
+
+    <label>
+      <input type="radio" name="mode" value="auto" checked />
+      Auto (HandPose)
+    </label>
+    <label>
+      <input type="radio" name="mode" value="manual" />
+      Manual fallback (keys 1–5 also work anytime)
+    </label>
+
+    <div id="manual-wrap">
+      <span style="opacity:0.6;font-size:11px;">Tree level</span>
+      <select id="manual-level" aria-label="Manual tree level">
+        <option value="1">1 — simplest</option>
+        <option value="2">2 — more branches</option>
+        <option value="3">3 — denser</option>
+        <option value="4">4 — very complex</option>
+        <option value="5">5 — maximum</option>
+      </select>
+    </div>
+
+    <div id="status">Loading model…</div>
+
+    <div id="fallback-link">
+      If this page won’t load ML libraries, use
+      <a href="index-simple.html">keyboard-only version</a>.
+    </div>
+  </div>
+
+  <script src="sketch.js"></script>
+
+  <script>
+    // Wire UI → globals read by sketch.js
+    document.querySelectorAll('input[name="mode"]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        window.__handTreeMode = el.value;
+        document.getElementById('manual-wrap').classList.toggle('visible', el.value === 'manual');
+      });
+    });
+    document.getElementById('manual-level').addEventListener('change', function () {
+      window.__manualLevel = parseInt(this.value, 10);
+    });
+    window.__handTreeMode = 'auto';
+    window.__manualLevel = 1;
+  </script>
+</body>
+</html>
